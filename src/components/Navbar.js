@@ -28,25 +28,16 @@ const menuItems = [
 
 export const Navbar = () => {
     const [selection, setSelection] = useState("")
-    const dropdown = useRef(null)
+    //const dropdown = useRef(null)
     
     const [{ height, width, transform }, setDimensions] = useState({ height: 0, width: 0, transform: 0 })
     const [lastRef, setLastRef] = useState("")
     const [linkRef, setLinkRef] = useState([])
     const [firstRef, setFirstRef] = useState("") 
-    const transitionStyles = {
-        entering: { opacity: 1 },
-        entered: { opacity: 1 },
-        exiting: { opacity: 0 },
-        exited: { opacity: 0 },
-    }
+    const [dropdownRef, setDropdownRef] = useState("")
+    
     const [currentRef, setCurrentRef] = useState("")
-    const defaultStyles = {
-        position: "absolute",
-        transition: "opacity 0.4s ease"
-        //backgroundColor: "lightblue",
-        //transition: "height 0.4s ease"
-    }
+    
     const handleHover = (id) => {
         if (selection) {
 
@@ -61,11 +52,11 @@ export const Navbar = () => {
             const transformAmount = currentRef.getBoundingClientRect().x + 
             currentRef.getBoundingClientRect().width -firstRef.getBoundingClientRect().x
             setDimensions({
-                height: dropdown.current.offsetHeight,
-                width: dropdown.current.offsetWidth,
+                height: dropdownRef.offsetHeight,
+                width: dropdownRef.offsetWidth,
                 transform: `translateX(${transformAmount}px)`
             })
-            console.log("diferencia", dropdown.current.getBoundingClientRect().x - currentRef.getBoundingClientRect().x)
+            console.log("diferencia", dropdownRef.getBoundingClientRect().x - currentRef.getBoundingClientRect().x)
             //console.log(currentRef.getBoundingClientRect().x, "ostia")
         }
     }, [selection])
@@ -82,7 +73,8 @@ export const Navbar = () => {
                     className="ul-nav"
                     onMouseLeave={() => { setSelection("") }}
                 >
-                    <MenuItem key={menuItems[0].id} handleHover={handleHover} setCurrentRef={setCurrentRef} firstRef={firstRef} setFirstRef={setFirstRef} info={menuItems[0]} />
+                    <MenuItem key={menuItems[0].id} handleHover={handleHover} setCurrentRef={setCurrentRef} firstRef={firstRef} setFirstRef={setFirstRef} info={menuItems[0]} setDropdownRef = {setDropdownRef} 
+                    selection={selection}/>
                     {menuItems.slice(1, menuItems.length).map(item => (
                     <MenuItem
                         key={item.id}
@@ -91,26 +83,11 @@ export const Navbar = () => {
                         selection={selection}
                         setSelection={setSelection}
                         setCurrentRef={setCurrentRef}
+                        setDropdownRef = {setDropdownRef}
                     //isSelected = {item.id === selection.id}
                     />))}
                 </ul>
-                <div style={{ position: "absolute", height, width, transform, background: "lightblue", transition: "all 0.4s ease", overflow: "hidden" }}>
-                   
-                       
-                            <ul
-                                style={{
-                                    ...defaultStyles
-                                }}
-                                ref={dropdown}
-                            >
-                                {selection && selection.dropdownItems.map((item, index) => (
-                                    <li
-                                        key={index}
-                                    >{item}</li>
-                                ))}
-                            </ul>
-                        
-                    
+                <div style={{ position: "absolute", height, width, transform, background: "lightblue", transition: "all 0.4s ease", overflow: "hidden", zIndex: "-20" }}> 
                     </div>
             </nav>
         </header>
