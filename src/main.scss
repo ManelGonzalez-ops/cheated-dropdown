@@ -1,0 +1,26 @@
+header {
+    display: flex;
+    padding: 1rem;
+
+    & > a {
+        flex: 1;
+    }
+    & > nav{
+        flex: 1;
+    }
+}
+.ul-nav {
+    display: flex;
+    justify-content: space-around;
+
+    li{
+        list-style: none;
+    }
+}
+ul{
+    margin: 0;
+    padding: 0;
+    li{
+        list-style: none;
+    }
+}
