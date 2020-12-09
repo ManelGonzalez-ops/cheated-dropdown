@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { MenuItem } from './MenuItem'
 import { Transition } from 'react-transition-group'
+import { Dropdown } from './Dropdown'
 
 const menuItems = [
     {
@@ -10,12 +11,12 @@ const menuItems = [
     },
     {
         title: "About",
-        dropdownItems: ["amazon", "google"],
+        dropdownItems: ["pesca", "futbol"],
         id: 2
     },
     {
         title: "Work",
-        dropdownItems: ["amazon"],
+        dropdownItems: ["autentic"],
         id: 3
     },
     {
@@ -25,19 +26,25 @@ const menuItems = [
     },
 ]
 
+const timeout = {
+    appear: 400,
+    enter: 400,
+    exit: 50,
+}
 
 export const Navbar = () => {
     const [selection, setSelection] = useState("")
     //const dropdown = useRef(null)
-    
+
     const [{ height, width, transform }, setDimensions] = useState({ height: 0, width: 0, transform: 0 })
-    const [lastRef, setLastRef] = useState("")
-    const [linkRef, setLinkRef] = useState([])
-    const [firstRef, setFirstRef] = useState("") 
-    const [dropdownRef, setDropdownRef] = useState("")
-    
+    //this is to calculate the horizontal movemente
     const [currentRef, setCurrentRef] = useState("")
-    
+    const [currentRefXStored, setCurrentRefXStored] = useState(null)
+    //this to use the first ref as reference for horizonat mov
+    const [firstRef, setFirstRef] = useState("")
+    //this is to track diemnsions of the dropdown of the selected item
+    const [dropdownRef, setDropdownRef] = useState("")
+    const dropdownContainer = useRef(null)
     const handleHover = (id) => {
         if (selection) {
 
@@ -45,50 +52,87 @@ export const Navbar = () => {
         setSelection(menuItems.find(item => item.id === id))
     }
 
-    console.log(linkRef, "puta")
+
 
     useEffect(() => {
-        if (selection) {
-            const transformAmount = currentRef.getBoundingClientRect().x + 
-            currentRef.getBoundingClientRect().width -firstRef.getBoundingClientRect().x
+        if (selection && dropdownRef) {
+            const transformAmount = currentRef.getBoundingClientRect().x +
+                currentRef.getBoundingClientRect().width - firstRef.getBoundingClientRect().x
+            setCurrentRefXStored(currentRef.getBoundingClientRect().x - dropdownContainer.current.getBoundingClientRect().x - dropdownContainer.current.getBoundingClientRect().width)
             setDimensions({
                 height: dropdownRef.offsetHeight,
                 width: dropdownRef.offsetWidth,
                 transform: `translateX(${transformAmount}px)`
             })
-            console.log("diferencia", dropdownRef.getBoundingClientRect().x - currentRef.getBoundingClientRect().x)
+            //console.log("diferencia", dropdownRef.getBoundingClientRect().x - currentRef.getBoundingClientRect().x)
             //console.log(currentRef.getBoundingClientRect().x, "ostia")
         }
-    }, [selection])
+    }, [dropdownRef])
 
-   
+
 
     return (
         <header>
             <a href="#"><h3>logo</h3></a>
             <nav
                 style={{ position: "relative" }}
+                onMouseLeave={(e) => {
+                    console.log(e.target, "target")
+                    console.log(e.target.id, "target id")
+                    if (e.target.id === "dropdown") setSelection("")
+                }}
             >
                 <ul
                     className="ul-nav"
-                    onMouseLeave={() => { setSelection("") }}
+
+
                 >
-                    <MenuItem key={menuItems[0].id} handleHover={handleHover} setCurrentRef={setCurrentRef} firstRef={firstRef} setFirstRef={setFirstRef} info={menuItems[0]} setDropdownRef = {setDropdownRef} 
-                    selection={selection}/>
-                    {menuItems.slice(1, menuItems.length).map(item => (
-                    <MenuItem
-                        key={item.id}
-                        info={item}
-                        handleHover={handleHover}
+                    <MenuItem key={menuItems[0].id} handleHover={handleHover} setCurrentRef={setCurrentRef} firstRef={firstRef} setFirstRef={setFirstRef} info={menuItems[0]} setDropdownRef={setDropdownRef}
                         selection={selection}
-                        setSelection={setSelection}
-                        setCurrentRef={setCurrentRef}
-                        setDropdownRef = {setDropdownRef}
-                    //isSelected = {item.id === selection.id}
-                    />))}
+
+                    />
+                    {menuItems.slice(1, menuItems.length).map(item => (
+                        <MenuItem
+                            key={item.id}
+                            info={item}
+                            handleHover={handleHover}
+                            selection={selection}
+                            setSelection={setSelection}
+                            setCurrentRef={setCurrentRef}
+                            setDropdownRef={setDropdownRef}
+                            
+                        //isSelected = {item.id === selection.id}
+                        />))}
                 </ul>
-                <div style={{ position: "absolute", height, width, transform, background: "lightblue", transition: "all 0.4s ease", overflow: "hidden", zIndex: "-20" }}> 
-                    </div>
+                <div
+                    id="dropdown"
+                    className="dropdown-container"
+                    style={{ position: "absolute", height, width, transform, background: "lightblue", transition: "all 0.4s ease", overflow: "hidden", zIndex: "-20" }}
+                    ref={dropdownContainer}
+                    >
+                    {menuItems && menuItems.map(item => (
+                        <Transition
+                            in={selection.id === item.id}
+                            timeout={timeout}
+                            mountOnEnter
+                            unmountOnExit
+                        >{
+                                state => (
+                                    <Dropdown
+                                        state={state}
+                                        info={item}
+                                        selection={selection}
+                                        setDropdownRef={setDropdownRef}
+                                        setSelection={setSelection}
+                                        currentRefXStored={currentRefXStored}
+                                    />
+
+                                )
+                            }
+
+                        </Transition>
+                    ))}
+                </div>
             </nav>
         </header>
     )
