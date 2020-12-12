@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState} from 'react'
 import { MenuItem } from './MenuItem'
 import { Transition } from 'react-transition-group'
 import { Dropdown } from './Dropdown'
@@ -20,9 +20,14 @@ const menuItems = [
         id: 3
     },
     {
+        title: "Free time",
+        dropdownItems: ["autentic", "facebook", "amazon"],
+        id: 4
+    },
+    {
         title: "Contact",
         dropdownItems: ["amazon", "google", "facebook", "amazon", "google"],
-        id: 4
+        id: 5
     },
 ]
 
@@ -34,36 +39,25 @@ const timeout = {
 
 export const Navbar = () => {
     const [selection, setSelection] = useState("")
-    //const dropdown = useRef(null)
-
     const [{ height, width, transform }, setDimensions] = useState({ height: 0, width: 0, transform: 0, left: 0 })
-    //this is to calculate the horizontal movemente
     const [currentRef, setCurrentRef] = useState("")
-
-    //this to use the first ref as reference for horizonat mov
     const [firstRef, setFirstRef] = useState("")
-    //this is to track diemnsions of the dropdown of the selected item
     const [dropdownRef, setDropdownRef] = useState("")
     const dropdownContainer = useRef(null)
     const [transformX, setTransformX] = useState(0)
     const [dropdownId, setDropdownId] = useState(0)
     const lastSelectionId = useRef(0)
     const lastDirection = useRef(0)
-    const currentDirection = useRef(0)
+    const [currentDirection, setCurrentDirection] = useState(0)
     const handleHover = (id) => {
-        if (selection) {
-
-        }
         setSelection(menuItems.find(item => item.id === id))
     }
 
     const getCorrectTranslation = (id) => {
-        // if(id > lastSelectionId.current){
 
-        // }
-        console.table(id, lastSelectionId.current)
+        console.log(id, lastSelectionId.current)
         const direction = id > lastSelectionId.current ? "right" : "left"
-        return { direction }
+        return direction
     }
 
     useEffect(() => {
@@ -72,64 +66,33 @@ export const Navbar = () => {
                 currentRef.getBoundingClientRect().width - firstRef.getBoundingClientRect().x
             if (dropdownId !== 0) {
 
-                const { direction } = getCorrectTranslation(dropdownId)
-                currentDirection.current = direction
+                const direction = getCorrectTranslation(dropdownId)
+                setCurrentDirection(direction)
                 const translation = dropdownRef.offsetWidth
                 let correctTranslation;
                 correctTranslation = direction === "right" ? translation : -translation
-                console.table(currentDirection.current, lastDirection.current)
-                if (currentDirection.current !== lastDirection.current) {
-                    console.log("cambio de sentido")
-                    setTransformX(-correctTranslation)
-                }else{
-                    setTransformX(correctTranslation)
+                console.table(currentDirection, lastDirection.current)
+
+                if (dropdownId === menuItems[0].id || dropdownId === menuItems[menuItems.length - 1].id) {
+                    correctTranslation = -correctTranslation
+
+                    console.log("extremoou")
+                } else {
+                    if (currentDirection !== lastDirection.current) {
+                        correctTranslation = -correctTranslation
+                    }
                 }
 
-                
+                setTransformX(correctTranslation)
+                setDimensions({
+                    height: dropdownRef.offsetHeight,
+                    width: dropdownRef.offsetWidth,
+                    transform: `translateX(${transformAmount}px)`
+                })
             }
 
-            setDimensions({
-                height: dropdownRef.offsetHeight,
-                width: dropdownRef.offsetWidth,
-                transform: `translateX(${transformAmount}px)`
-            })
-            //console.log("diferencia", dropdownRef.getBoundingClientRect().x - currentRef.getBoundingClientRect().x)
-            //console.log(currentRef.getBoundingClientRect().x, "ostia")
         }
-    }, [dropdownRef])
-
-    useEffect(() => {
-        if (dropdownId !== 0) {
-            //make account when changing focused dropdown variation
-            lastSelectionId.current = dropdownId
-            //make account for the variation of the direction
-            lastDirection.current = currentDirection.current
-        }
-    }, [transformX])
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    }, [dropdownRef, currentDirection])
 
 
 
@@ -146,8 +109,6 @@ export const Navbar = () => {
             >
                 <ul
                     className="ul-nav"
-
-
                 >
                     <MenuItem key={menuItems[0].id} handleHover={handleHover} setCurrentRef={setCurrentRef} firstRef={firstRef} setFirstRef={setFirstRef} info={menuItems[0]} setDropdownRef={setDropdownRef}
                         selection={selection}
@@ -171,6 +132,10 @@ export const Navbar = () => {
                     className="dropdown-container"
                     style={{ position: "absolute", height, width, transform, background: "lightblue", transition: "all 0.3s ease", overflow: "hidden", zIndex: "-20" }}
                     ref={dropdownContainer}
+                    onTransitionEnd={() => {
+                        lastDirection.current = currentDirection;
+                        lastSelectionId.current = dropdownId
+                    }}
                 >
                     {menuItems && menuItems.map(item => (
                         <Transition
@@ -189,7 +154,6 @@ export const Navbar = () => {
                                         setSelection={setSelection}
                                         translateX={transformX}
                                         setDropdownId={setDropdownId}
-                                    // width={currentRefXStored > 0 ? -width : width}
                                     />
 
                                 )
@@ -203,26 +167,3 @@ export const Navbar = () => {
     )
 }
 
-const ItemAnimated = ({ selection }) => {
-
-    const [selectionDefered, setSelectionDefered] = useState()
-    useEffect(() => {
-        if (selection) {
-            setTimeout(() => {
-                setSelectionDefered(selection)
-            }, 200)
-        } else {
-            //if the dropdown was close we won't settimout
-            setSelectionDefered(selection)
-        }
-    }, [selection])
-
-    return (
-        <>
-            {selectionDefered && selectionDefered.dropdownItems.map((item, index) => (
-                <li
-                    key={index}
-                >{item}</li>
-            ))}
-        </>)
-}
