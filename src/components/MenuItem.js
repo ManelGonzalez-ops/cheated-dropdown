@@ -36,6 +36,7 @@ export const MenuItem = ({ info, handleHover, selection, setSelection, setCurren
                     >{item}</li>
                 ))}
             </ul> */}
+         
         </li>
     )
 }
